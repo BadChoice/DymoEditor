@@ -1,5 +1,10 @@
 /**
- * Created by badchoice on 29/12/15.
+ * Created by Jordi Puigdellívol<jordi.p@revo.works> on 29/12/2015.
+ * JQuery plugin for dymo ticket editor
+ *
+ * Patches and suggestions are welcome
+ *
+ * (c) 2016 - Revo Systems http://revo.works
  */
 
 var DYMO_ORIENTATION_LANDSCAPE = 'Landscape';
@@ -26,12 +31,14 @@ var DYMO_ORIENTATION_PORTRAIT  = 'Portrait';
         //Private variables
         //-----------
         var editor;
+        var objects;
 
         //-----------
         //Functions
         //-----------
-        this.toggleOrientation  = function (type) {            toggleOrientation(this);         return this; }
-        this.exportXML          = function (type) {            exportXML(this);                 return this; }
+        this.toggleOrientation  = function () {            toggleOrientation(this);         return this; }
+        this.exportXML          = function () {            exportXML(this);                 return this; }
+        this.addObject          = function (type) {        addObject(this,type);            return this; }
 
         //-----------
         // Init
@@ -70,6 +77,16 @@ var DYMO_ORIENTATION_PORTRAIT  = 'Portrait';
         }, 1000, function() {
             // Animation complete.
         });
+    }
+
+    function addObject(element, type){
+
+        if(type == 'text'){
+            textObject = $('<span type="text">a text</span>');
+            textObject.addClass('dymoEditorObject');
+            element.editor.append(textObject);
+        }
+
     }
 
     function exportXML(element){

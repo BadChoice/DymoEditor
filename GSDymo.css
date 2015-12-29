@@ -1,7 +1,12 @@
 #dymoEditor{
     width:250px;
     height:100px;
-
+    padding:2px;
     border:1px solid #aaa;
     border-radius: 5px;
+}
+
+
+.dymoEditorObject{
+    border:1px solid #ddd;
 }
