@@ -2,19 +2,30 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-<title>Print a Label</title> 
-<script src = "http://labelwriter.com/software/dls/sdk/js/DYMO.Label.Framework.latest.js" type="text/javascript" charset="UTF-8"> </script>
+<title>Dymo editor</title>
+
+    <link rel="stylesheet" type="text/css" href="./GSDymo.css">
+
 <script src = "https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src = "http://labelwriter.com/software/dls/sdk/js/DYMO.Label.Framework.latest.js" type="text/javascript" charset="UTF-8"> </script>
 <script src = "./GSDymo.js" type="text/javascript" charset="UTF-8"> </script>
 <script src = "./PrintLabel.js" type="text/javascript" charset="UTF-8"> </script>
 
-<link rel="stylesheet" type="text/css" href="GSDymo.css">
+
 </head>
 
 <body>
 <h1>REVO: Dymo printer</h1>
 <!-- http://developers.dymo.com/tag/xml/ -->
- 
+
+    <button onClick="editor.toggleOrientation();">Toggle Orientation</button>
+    <button onClick="editor.exportXML();">        Export XML</button>
+
+    <br><br>
+    <div id="dymoEditor"></div>
+
+    <br><br>
+
     <div id="textDiv">
         <label for="textTextArea">Label text:</label><br/>
         <textarea name="textTextArea" id="textTextArea"  rows='5' cols='40'></textarea>
@@ -25,10 +36,12 @@
     </div>
 
 
-    <div>
 
 
-    </div>
+    <script>
+        var editor = $('dymoEditor').dymoEditor();
+    </script>
+
 
 </body> 
  
