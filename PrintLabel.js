@@ -36,7 +36,9 @@
         <PaperOrientation>Landscape</PaperOrientation>\
         <Id>Address</Id>\
         <PaperName>30252 Address</PaperName>\
-        <DrawCommands/>\
+         <DrawCommands>\
+                <RoundRectangle X="500" Y="200" Width="300" Height="300" Rx="270" Ry="270" />\
+         </DrawCommands>\
         <ObjectInfo>\
             <TextObject>\
                 <Name>Text</Name>\
