@@ -22,12 +22,11 @@
     <button onClick="editor.addObject('text');">Text</button>
     <button onClick="editor.addObject('value');">Value</button>
     <button onClick="editor.addObject('barcode');">Barcode</button>
-    <button onClick="editor.addObject('rectangle');">Rectangle</button>
 
     <br><br>
     <div id="dymoEditor"></div>
 
-    <br><br>
+    <br>
 
     <!--div id="textDiv">
         <label for="textTextArea">Label text:</label><br/>
@@ -49,12 +48,9 @@
     <script>
         var editor;
         $(document).ready(function() {
-            console.log("Now");
             editor = $('dymoEditor').dymoEditor({'values':['ID','Price','Barcode']});
         });
     </script>
-
-
 
 </body> 
  

@@ -18,3 +18,8 @@
     position:absolute;
     display:inline-block;
 }
+
+.dymoEditorBarcodeObject{
+    text-align:center;
+    font-size:24px;
+}
