@@ -20,10 +20,10 @@ var DYMO_ORIENTATION_PORTRAIT  = 'Portrait';
     // INIT
     //========================================================================
     $.fn.dymoEditor = function(options) {
+
         //-----------
         // Default options
         //-----------
-
         this.settings   = $.extend({}, $.fn.dymoEditor.defaults, options);
         var settings    = this.settings;
 
@@ -32,9 +32,7 @@ var DYMO_ORIENTATION_PORTRAIT  = 'Portrait';
         //-----------
         var editor;
         var popup;
-        var objects;
         var currentObject;
-
 
         //-----------
         //Functions
@@ -60,6 +58,7 @@ var DYMO_ORIENTATION_PORTRAIT  = 'Portrait';
     $.fn.dymoEditor.defaults = {
         width:  "250px",
         height: "100px",
+        values: [],
     };
 
     //========================================================================
@@ -76,13 +75,21 @@ var DYMO_ORIENTATION_PORTRAIT  = 'Portrait';
     function createPopup(element){
         element.popup = $('<div id="dymoEditorPopup">' +
                             "<input  id='popupInput'    type='text value='value' /> " +
+                            "<select id='popupSelect' >" + getAvailableValueOptions(element) +"</select> " +
                             "<a      id='popupSave'     onClick='editor.updateObjectText()'>    <i class='fa fa-floppy-o'></i></a> " +
                             "<a      id='popupRemove'   onClick='editor.removeSelectedObject()'><i class='fa fa-trash'></i></a> " +
                             "<a      id='popupClose'    onClick='editor.hidePopup()'>           <i class='fa fa-times-circle'></i></a> " +
-        '</div>');
+                          '</div>');
         element.editor.parent().append(element.popup);
     }
 
+    function getAvailableValueOptions(element){
+        var options = "";
+        element.settings.values.forEach(function(entry) {
+            options = options + "<option value="+ entry +">"    + entry   +"</option>";
+        });
+        return options;
+    }
     //========================================================================
     // FUNCTIONS
     //========================================================================
@@ -100,21 +107,26 @@ var DYMO_ORIENTATION_PORTRAIT  = 'Portrait';
     }
 
     function addObject(element, type){
-
+        var object;
         if(type == 'text'){
-            var textObject = $('<div type="text"><div>Click to enter text</div></div>');
-            textObject.addClass('dymoEditorObject');
-            textObject.css('width','100px');
-            textObject.css('height','50px');
-            element.editor.append(textObject);
-
-            textObject.draggable({containment: "parent", grid: [ 5, 5 ]});
-            textObject.resizable({containment: "parent", grid: [ 5, 5 ]});
-
-            textObject.click(function(){
-                showPopup(element, textObject);
-            });
+            object = $('<div type="text"><div>Click to enter text</div></div>');
+            object.css('width' ,'100px');
+            object.css('height','50px');
         }
+        else if(type == 'value'){
+            object = $('<div type="value"><div>--</div></div>');
+            object.css('width' ,'100px');
+            object.css('height','50px');
+        }
+
+        object.addClass ('dymoEditorObject');
+        object.draggable({containment: "parent", grid: [ 5, 5 ]});
+        object.resizable({containment: "parent", grid: [ 5, 5 ]});
+        element.editor.append(object);
+
+        object.click(function(){
+            showPopup(element, object);
+        });
     }
 
     function getObjectText(object){
@@ -122,7 +134,14 @@ var DYMO_ORIENTATION_PORTRAIT  = 'Portrait';
     }
 
     function updateObjectText(element){
-        element.currentObject.children().first().text($('#popupInput').val());
+        var objectType      = element.currentObject.attr("type");
+
+        if(objectType == "text") {
+            element.currentObject.children().first().text($('#popupInput').val());
+        }
+        else if(objectType == "value"){
+            element.currentObject.children().first().text("{" + $('#popupSelect').val() + "}");
+        }
     }
 
     function removeSelectedObject(element){
@@ -139,10 +158,14 @@ var DYMO_ORIENTATION_PORTRAIT  = 'Portrait';
 
         var objectType      = object.attr("type");
         var popupInput      = $('#popupInput').hide();
+        var popupSelect     = $('#popupSelect').hide();
 
         if(objectType == 'text') {
             popupInput.show();
             popupInput.val(getObjectText(object));
+        }
+        else if(objectType == 'value') {
+            popupSelect.show();
         }
 
     }
