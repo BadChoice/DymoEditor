@@ -2,4 +2,9 @@
 
 A JQuery Plugin to design and print Dymo labels developed initialy for [Revo](http://revo.works) web backend.
 
+Elements required:
+- JQuery  
+- JQuery UI   
+- Font Awesome (optional for icons)   
+
 Right now, the `div` element to handle the editor must have as ID `dymoEditor`.
