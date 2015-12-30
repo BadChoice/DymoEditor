@@ -10,6 +10,11 @@
 var DYMO_ORIENTATION_LANDSCAPE = 'Landscape';
 var DYMO_ORIENTATION_PORTRAIT  = 'Portrait';
 
+var DYMO_PAPER_ADDRESS      = "30252 Address";
+var DYMO_PAPER_FILEFOLDER_  = "30327 File Folder – offset";
+var DYMO_PAPER_SHIPPING     = "30256 Shipping";
+
+var DYMO_PIXEL_TO_INCH      = 20;
 
 //-----------------------
 // TICKET EDITOR PLUGIN
@@ -38,7 +43,7 @@ var DYMO_ORIENTATION_PORTRAIT  = 'Portrait';
         //Functions
         //-----------
         this.toggleOrientation      = function ()     { toggleOrientation(this);         return this; }
-        this.exportXML              = function ()     { exportXML(this);                 return this; }
+        this.exportXML              = function ()     { return exportXML(this);                       }
         this.addObject              = function (type) { addObject(this,type);            return this; }
         this.hidePopup              = function ()     { hidePopup(this);                 return this; }
         this.removeSelectedObject   = function ()     { removeSelectedObject(this);      return this; }
@@ -180,12 +185,62 @@ var DYMO_ORIENTATION_PORTRAIT  = 'Portrait';
 
         xml = xml + '<PaperOrientation>Landscape</PaperOrientation>'+
                     '<Id>Address</Id>' +
-                    '<PaperName>30252 Address</PaperName>';
+                    '<PaperName>30256 Shipping</PaperName>' +
+                    '<DrawCommands/>';
+
+        element.editor.children().each(function(){
+            xml = xml + exportObjectXml($(this));
+        });
 
 
         xml = xml + '</DieCutLabel>';
 
         console.log(xml);
+
+        return xml;
+    }
+
+    function exportObjectXml(object){
+
+        var x       = (object.position().left - object.parent().position().left)* DYMO_PIXEL_TO_INCH + 150;
+        var y       = (object.position().top  - object.parent().position().top) * DYMO_PIXEL_TO_INCH + 100;
+        var width   = object.width()         * DYMO_PIXEL_TO_INCH;
+        var height  = object.height()        * DYMO_PIXEL_TO_INCH;
+        var text    = getObjectText(object);
+
+        console.log("Object position:" + object.position().left + " - " + object.position().top + "-" + width + "-" + height);
+        console.log("Parent position:" + object.parent().position().left + " - " + object.parent().position().top );
+        console.log("Final  position:" + (object.position().left - object.parent().position().left) + " - " + (object.position().top - object.parent().position().top) + "-" + width + "-" + height);
+        console.log("Final. position:" + x + " - " + y + "-" + width + "-" + height);
+        console.log("---")
+
+        return '<ObjectInfo>\
+                    <TextObject>\
+                        <Name>Text</Name>\
+                        <ForeColor Alpha="255" Red="0" Green="0" Blue="0" />\
+                        <BackColor Alpha="0" Red="255" Green="255" Blue="255" />\
+                        <LinkedObjectName></LinkedObjectName>\
+                        <Rotation>Rotation0</Rotation>\
+                        <IsMirrored>False</IsMirrored>\
+                        <IsVariable>True</IsVariable>\
+                        <HorizontalAlignment>Left</HorizontalAlignment>\
+                        <VerticalAlignment>Top</VerticalAlignment>\
+                        <TextFitMode>ShrinkToFit</TextFitMode>\
+                        <UseFullFontHeight>False</UseFullFontHeight>\
+                        <Verticalized>False</Verticalized>\
+                        <StyledText>\
+                            <Element>\
+                                <String>'+ text +'</String>\
+                                    <Attributes>\
+                                        <Font Family="Arial" Size="12" Bold="False" Italic="False"\
+                                             Underline="False" Strikeout="False" />\
+                                        <ForeColor Alpha="255" Red="0" Green="0" Blue="0" />\
+                                    </Attributes>\
+                            </Element>\
+                        </StyledText>\
+                    </TextObject>\
+                    <Bounds X="' + x + '" Y="' + y + '" Width="'+width+'" Height="'+height+'" />\
+                </ObjectInfo>';
     }
 
 

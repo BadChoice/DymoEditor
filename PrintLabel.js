@@ -28,40 +28,78 @@
         // prints the label
         printButton.onclick = function()
         {
-            try
-            {
+            try{
                 // open label
                 var labelXml = '<?xml version="1.0" encoding="utf-8"?>\
-    <DieCutLabel Version="8.0" Units="twips">\
-        <PaperOrientation>Landscape</PaperOrientation>\
-        <Id>Address</Id>\
-        <PaperName>30252 Address</PaperName>\
-         <DrawCommands>\
-                <RoundRectangle X="500" Y="200" Width="300" Height="300" Rx="270" Ry="270" />\
-         </DrawCommands>\
-        <ObjectInfo>\
-            <TextObject>\
-                <Name>Text</Name>\
-                <ForeColor Alpha="255" Red="0" Green="0" Blue="0" />\
-                <BackColor Alpha="0" Red="255" Green="255" Blue="255" />\
-                <LinkedObjectName></LinkedObjectName>\
-                <Rotation>Rotation0</Rotation>\
-                <IsMirrored>False</IsMirrored>\
-                <IsVariable>True</IsVariable>\
-                <HorizontalAlignment>Left</HorizontalAlignment>\
-                <VerticalAlignment>Middle</VerticalAlignment>\
-                <TextFitMode>ShrinkToFit</TextFitMode>\
-                <UseFullFontHeight>True</UseFullFontHeight>\
-                <Verticalized>False</Verticalized>\
-                <StyledText/>\
-            </TextObject>\
-            <Bounds X="332" Y="150" Width="4455" Height="1260" />\
-        </ObjectInfo>\
-    </DieCutLabel>';
+                <DieCutLabel Version="8.0" Units="twips">\
+                    <PaperOrientation>Landscape</PaperOrientation>\
+                    <Id>Address</Id>\
+                    <PaperName>30256 Shipping</PaperName>\
+                    <DrawCommands/>\
+                    <ObjectInfo>\
+                        <TextObject>\
+                            <Name>Text</Name>\
+                            <ForeColor Alpha="255" Red="0" Green="0" Blue="0" />\
+                            <BackColor Alpha="0" Red="255" Green="255" Blue="255" />\
+                            <LinkedObjectName></LinkedObjectName>\
+                            <Rotation>Rotation0</Rotation>\
+                            <IsMirrored>False</IsMirrored>\
+                            <IsVariable>True</IsVariable>\
+                            <HorizontalAlignment>Left</HorizontalAlignment>\
+                            <VerticalAlignment>Top</VerticalAlignment>\
+                            <TextFitMode>ShrinkToFit</TextFitMode>\
+                            <UseFullFontHeight>False</UseFullFontHeight>\
+                            <Verticalized>False</Verticalized>\
+                            <StyledText>\
+                    <Element>\
+                        <String>BARCODE</String>\
+                            <Attributes>\
+                                <Font Family="Arial" Size="12" Bold="False" Italic="False"\
+                                         Underline="False" Strikeout="False" />\
+                                    <ForeColor Alpha="255" Red="0" Green="0" Blue="0" />\
+                                </Attributes>\
+                        </Element>\
+                    </StyledText>\
+                        </TextObject>\
+                        <Bounds X="200" Y="300" Width="3000" Height="1000" />\
+                    </ObjectInfo>\
+                                        <ObjectInfo>\
+                        <TextObject>\
+                            <Name>Text</Name>\
+                            <ForeColor Alpha="255" Red="0" Green="0" Blue="0" />\
+                            <BackColor Alpha="0" Red="255" Green="255" Blue="255" />\
+                            <LinkedObjectName></LinkedObjectName>\
+                            <Rotation>Rotation0</Rotation>\
+                            <IsMirrored>False</IsMirrored>\
+                            <IsVariable>True</IsVariable>\
+                            <HorizontalAlignment>Left</HorizontalAlignment>\
+                            <VerticalAlignment>Top</VerticalAlignment>\
+                            <TextFitMode>ShrinkToFit</TextFitMode>\
+                            <UseFullFontHeight>False</UseFullFontHeight>\
+                            <Verticalized>False</Verticalized>\
+                            <StyledText>\
+                    <Element>\
+                        <String>BARCODE</String>\
+                            <Attributes>\
+                                <Font Family="Arial" Size="12" Bold="False" Italic="False"\
+                                         Underline="False" Strikeout="False" />\
+                                    <ForeColor Alpha="255" Red="0" Green="0" Blue="0" />\
+                                </Attributes>\
+                        </Element>\
+                    </StyledText>\
+                        </TextObject>\
+                        <Bounds X="200" Y="700" Width="3000" Height="1000" />\
+                    </ObjectInfo>\
+                </DieCutLabel>';
+
+                labelXml = editor.exportXML();
+
+                console.log(labelXml);
+
                 var label = dymo.label.framework.openLabelXml(labelXml);
 
                 // set label text
-                label.setObjectText("Text", textTextArea.value);
+                //label.setObjectText("Text", textTextArea.value);
 
                 // select printer to print on
                 // for simplicity sake just use the first LabelWriter printer
