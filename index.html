@@ -15,8 +15,9 @@
 <h1>Dymo Label Editor</h1>
 <!-- http://developers.dymo.com/tag/xml/ -->
 
-    <button onClick="editor.toggleOrientation();">Toggle Orientation</button>
-    <button onClick="editor.exportXML();">        Export XML</button>
+    <button onClick="editor.toggleOrientation();">              Toggle Orientation</button>
+    <button onClick="editor.selectPaper(DYMO_PAPER_ADDRESS);">                     Change size Address</button>
+    <button onClick="editor.exportXML();">   Export XML</button>
 
     <br>
     <button onClick="editor.addObject('text');">Text</button>
@@ -27,6 +28,8 @@
     <div id="dymoEditor"></div>
 
     <br>
+
+    <button onClick="editor.print({'Price':'10€'});">Print</button>
 
     <!--div id="textDiv">
         <label for="textTextArea">Label text:</label><br/>

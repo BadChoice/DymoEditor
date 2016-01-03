@@ -12,7 +12,7 @@ var DYMO_ORIENTATION_PORTRAIT   = 'Portrait';
 
 var DYMO_PAPER_ADDRESS          = "30252 Address";
 var DYMO_PAPER_FILEFOLDER       = "30327 File Folder – offset";
-var DYMO_PAPER_SHIPPING         = "30256 Shipping";
+var DYMO_PAPER_SHIPPING         = "30256 Shipping"; //Default
 
 var DYMO_PIXEL_TO_INCH          = 12;
 
@@ -38,16 +38,21 @@ var DYMO_PIXEL_TO_INCH          = 12;
         var editor;
         var popup;
         var currentObject;
+        var selectedPaper       = DYMO_PAPER_SHIPPING;
+        var selectedOrientation = DYMO_ORIENTATION_LANDSCAPE;
+        var printValues         = {};
 
         //-----------
         //Functions
         //-----------
-        this.toggleOrientation      = function ()     { toggleOrientation(this);         return this; }
-        this.exportXML              = function ()     { return exportXML(this);                       }
-        this.addObject              = function (type) { addObject(this,type);            return this; }
-        this.hidePopup              = function ()     { hidePopup(this);                 return this; }
-        this.removeSelectedObject   = function ()     { removeSelectedObject(this);      return this; }
-        this.updateObjectText       = function ()     { updateObjectText(this);          return this; }
+        this.toggleOrientation      = function ()       { toggleOrientation(this);         return this; }
+        this.selectPaper            = function (paper)  { selectPaper(this,paper);         return this; }
+        this.exportXML              = function ()       { return exportXML(this);                       }
+        this.addObject              = function (type)   { addObject(this,type);            return this; }
+        this.hidePopup              = function ()       { hidePopup(this);                 return this; }
+        this.removeSelectedObject   = function ()       { removeSelectedObject(this);      return this; }
+        this.updateObjectText       = function ()       { updateObjectText(this);          return this; }
+        this.print                  = function (values) { print(this,values);              return this; }
 
         //-----------
         // Init
@@ -111,6 +116,22 @@ var DYMO_PIXEL_TO_INCH          = 12;
         });
     }
 
+    function selectPaper(element, paper){
+        if(paper == DYMO_PAPER_ADDRESS){
+            element.editor.animate({
+                height  : 100,
+                width   : 250
+            });
+        }
+
+        element.selectedPaper = paper;
+    }
+
+    function print(element,values){
+        element.printValues = values;
+        element.exportXML();
+    }
+
     function addObject(element, type){
         var object;
         if(type == 'text'){
@@ -130,10 +151,11 @@ var DYMO_PIXEL_TO_INCH          = 12;
             object.attr('text','barcode')
         }
 
+        element.editor.append(object);
         object.addClass ('dymoEditorObject');
         object.draggable({containment: "parent", grid: [ 5, 5 ]});
-        object.resizable({containment: "parent", grid: [ 5, 5 ]});
-        element.editor.append(object);
+        object.resizable({containment: "parent", grid: [ 5, 5 ], addClasses: false});
+
 
         object.click(function(){
             showPopup(element, object);
@@ -158,6 +180,7 @@ var DYMO_PIXEL_TO_INCH          = 12;
             element.currentObject.children().first().text($('#popupInput').val());
         }
         else if(objectType == "value"){
+            element.currentObject.attr('value',$('#popupSelect').val());
             element.currentObject.children().first().text("{" + $('#popupSelect').val() + "}");
         }
         else if(objectType == 'barcode'){
@@ -213,7 +236,7 @@ var DYMO_PIXEL_TO_INCH          = 12;
                     '<DrawCommands/>';
 
         element.editor.children().each(function(){
-            xml = xml + exportObjectXml($(this));
+            xml = xml + exportObjectXml(element,$(this));
         });
 
 
@@ -224,7 +247,7 @@ var DYMO_PIXEL_TO_INCH          = 12;
         return xml;
     }
 
-    function exportObjectXml(object){
+    function exportObjectXml(element,object){
 
         var type    = object.attr("type");
 
@@ -292,6 +315,38 @@ var DYMO_PIXEL_TO_INCH          = 12;
                     </BarcodeObject>\
                     <Bounds X="' + x + '" Y="' + y + '" Width="' + width + '" Height="' + height + '" />\
                 </ObjectInfo>';
+        }
+        else if(type == 'value'){
+            var valueId  = object.attr('value');
+            var theValue = element.printValues[valueId];
+
+            return '<ObjectInfo>\
+                    <TextObject>\
+                        <Name>Text</Name>\
+                        <ForeColor Alpha="255" Red="0" Green="0" Blue="0" />\
+                        <BackColor Alpha="0" Red="255" Green="255" Blue="255" />\
+                        <LinkedObjectName></LinkedObjectName>\
+                        <Rotation>Rotation0</Rotation>\
+                        <IsMirrored>False</IsMirrored>\
+                        <IsVariable>True</IsVariable>\
+                        <HorizontalAlignment>Left</HorizontalAlignment>\
+                        <VerticalAlignment>Top</VerticalAlignment>\
+                        <TextFitMode>ShrinkToFit</TextFitMode>\
+                        <UseFullFontHeight>False</UseFullFontHeight>\
+                        <Verticalized>False</Verticalized>\
+                        <StyledText>\
+                            <Element>\
+                                <String>' + theValue + '</String>\
+                                    <Attributes>\
+                                        <Font Family="Arial" Size="12" Bold="False" Italic="False" Underline="False" Strikeout="False" />\
+                                        <ForeColor Alpha="255" Red="0" Green="0" Blue="0" />\
+                                    </Attributes>\
+                            </Element>\
+                        </StyledText>\
+                    </TextObject>\
+                    <Bounds X="' + x + '" Y="' + y + '" Width="' + width + '" Height="' + height + '" />\
+                </ObjectInfo>';
+
         }
     }
 
