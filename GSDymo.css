@@ -13,6 +13,9 @@
     padding:2px;
 }
 
+#dymoEditorPopup a{color:#3E8ACC;}
+#dymoEditorPopup a:hover{color: #37a3dd;}
+
 .dymoEditorObject{
     border:1px dashed #ddd;
     position:absolute;

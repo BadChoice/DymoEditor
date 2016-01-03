@@ -52,6 +52,8 @@ var DYMO_PIXEL_TO_INCH          = 12;
         this.hidePopup              = function ()       { hidePopup(this);                 return this; }
         this.removeSelectedObject   = function ()       { removeSelectedObject(this);      return this; }
         this.updateObjectText       = function ()       { updateObjectText(this);          return this; }
+        this.setAlign               = function (align)  { setAlign(this,align);            return this; }
+        this.toggleBold             = function ()       { toggleBold(this);                return this; }
         this.print                  = function (values) { print(this,values);              return this; }
 
         //-----------
@@ -86,9 +88,13 @@ var DYMO_PIXEL_TO_INCH          = 12;
         element.popup = $('<div id="dymoEditorPopup">' +
                             "<input  id='popupInput'    type='text value='value' /> " +
                             "<select id='popupSelect' >" + getAvailableValueOptions(element) +"</select> " +
-                            "<a      id='popupSave'     onClick='editor.updateObjectText()'>    <i class='fa fa-floppy-o'></i></a> " +
-                            "<a      id='popupRemove'   onClick='editor.removeSelectedObject()'><i class='fa fa-trash'></i></a> " +
-                            "<a      id='popupClose'    onClick='editor.hidePopup()'>           <i class='fa fa-times-circle'></i></a> " +
+                            "<a      id='popupSave'         onClick='editor.updateObjectText()'>        <i class='fa fa-floppy-o'></i></a> " +
+                            "<a      id='popupBold'         onClick='editor.toggleBold()'>              <i class='fa fa-bold'></i></a> " +
+                            "<a      id='popupAlignLeft'    onClick='editor.setAlign(\"left\")'>        <i class='fa fa-align-left'></i></a> " +
+                            "<a      id='popupAlignCenter'  onClick='editor.setAlign(\"center\")'>      <i class='fa fa-align-center'></i></a> " +
+                            "<a      id='popupAlignRight'   onClick='editor.setAlign(\"right\")'>       <i class='fa fa-align-right'></i></a> " +
+                            "<a      id='popupRemove'       onClick='editor.removeSelectedObject()'>    <i class='fa fa-trash'></i></a> " +
+                            "<a      id='popupClose'        onClick='editor.hidePopup()'>               <i class='fa fa-times-circle'></i></a> " +
                           '</div>');
         element.editor.parent().append(element.popup);
     }
@@ -128,14 +134,45 @@ var DYMO_PIXEL_TO_INCH          = 12;
     }
 
     function print(element,values){
-        element.printValues = values;
-        element.exportXML();
+        try{
+            element.printValues = values;
+            var labelXml        = element.exportXML();
+
+
+            var label    = dymo.label.framework.openLabelXml(labelXml);
+            var printers = dymo.label.framework.getPrinters();
+
+            if (printers.length == 0)
+                throw "No DYMO printers are installed. Install DYMO printers.";
+
+            // for simplicity sake just use the first LabelWriter printer
+            var printerName = "";
+            for (var i = 0; i < printers.length; ++i)
+            {
+                var printer = printers[i];
+                if (printer.printerType == "LabelWriterPrinter")
+                {
+                    printerName = printer.name;
+                    break;
+                }
+            }
+
+            if (printerName == "")
+                throw "No LabelWriter printers found. Install LabelWriter printer";
+
+            // finally print the label
+            label.print(printerName);
+        }
+        catch(e)
+        {
+            alert(e.message || e);
+        }
     }
 
     function addObject(element, type){
         var object;
         if(type == 'text'){
-            object = $('<div type="text"><div>Click to enter text</div></div>');
+            object = $('<div type="text"><div>Click to edit</div></div>');
             object.css('width' ,'100px');
             object.css('height','50px');
         }
@@ -188,6 +225,19 @@ var DYMO_PIXEL_TO_INCH          = 12;
         }
     }
 
+    function setAlign(element,align){
+        element.currentObject.css('text-align',align);
+    }
+
+    function toggleBold(element){
+        if(element.currentObject.css('font-weight') == 'bold'){
+            element.currentObject.css('font-weight','normal');
+        }
+        else{
+            element.currentObject.css('font-weight','bold');
+        }
+    }
+
     function removeSelectedObject(element){
         element.currentObject.remove();
         hidePopup(element);
@@ -200,27 +250,34 @@ var DYMO_PIXEL_TO_INCH          = 12;
         element.popup.css('left',element.editor.css('width') );
 
 
-        var objectType      = object.attr("type");
-        var popupInput      = $('#popupInput').hide();
-        var popupSelect     = $('#popupSelect').hide();
-        var popupSave       = $('#popupSave').hide();
+        var objectType          = object.attr("type");
+        var popupInput          = $('#popupInput')      .hide();
+        var popupSelect         = $('#popupSelect')     .hide();
+        var popupSave           = $('#popupSave')       .hide();
+        var popupAlignLeft      = $('#popupAlignLeft')  .hide();
+        var popupAlignCenter    = $('#popupAlignCenter').hide();
+        var popupAlignRight     = $('#popupAlignRight') .hide();
+        var popupBold           = $('#popupBold')       .hide();
 
         if(objectType == 'text') {
             popupInput.show();
             popupInput.val(getObjectText(object));
             popupSave.show();
+            popupAlignLeft.show(); popupAlignCenter.show(); popupAlignRight.show(); popupBold.show();
         }
         else if(objectType == 'value') {
             popupSelect.show();
             popupSave.show();
+            popupAlignLeft.show(); popupAlignCenter.show(); popupAlignRight.show(); popupBold.show();
         }
         else if(objectType == 'barcode'){
             popupInput.show();
             popupInput.val(getObjectText(object));
             popupSave.show();
         }
-
     }
+
+
     function hidePopup(element){
         element.popup.css('display','none');
         element.currentObject = null;
@@ -257,12 +314,11 @@ var DYMO_PIXEL_TO_INCH          = 12;
         var height  = object.height()        * DYMO_PIXEL_TO_INCH;
         var text    = getObjectText(object);
 
-        console.log("Object position:" + object.position().left + " - " + object.position().top + "-" + width + "-" + height);
+        /*console.log("Object position:" + object.position().left + " - " + object.position().top + "-" + width + "-" + height);
         console.log("Parent position:" + object.parent().position().left + " - " + object.parent().position().top );
         console.log("Final  position:" + (object.position().left - object.parent().position().left) + " - " + (object.position().top - object.parent().position().top) + "-" + width + "-" + height);
         console.log("Final. position:" + x + " - " + y + "-" + width + "-" + height);
-        console.log("---");
-
+        console.log("---");*/
 
         if(type == 'text') {
             return '<ObjectInfo>\
@@ -346,7 +402,6 @@ var DYMO_PIXEL_TO_INCH          = 12;
                     </TextObject>\
                     <Bounds X="' + x + '" Y="' + y + '" Width="' + width + '" Height="' + height + '" />\
                 </ObjectInfo>';
-
         }
     }
 
