@@ -66,6 +66,7 @@ var dymo_papers = {
         this.toggleOrientation      = function ()       { toggleOrientation(this);         return this; }
         this.selectPaper            = function (paper)  { selectPaper(this,paper);         return this; }
         this.exportXML              = function ()       { return exportXML(this);                       }
+        this.exportJSON             = function ()       { return exportJSON(this);                      }
         this.addObject              = function (type)   { addObject(this,type);            return this; }
         this.hidePopup              = function ()       { hidePopup(this);                 return this; }
         this.removeSelectedObject   = function ()       { removeSelectedObject(this);      return this; }
@@ -89,6 +90,7 @@ var dymo_papers = {
         paper       : DYMO_PAPER_ADDRESS,
         fontFamilies: ['Times New Roman','Arial','Helvetica Neue','Calibri'],
         fontSizes   : ['12px','14px','16px','18px','20px','22px','24px','26px','28px','30px'],
+        barcodeSizes: ['Small','Medium','Large'],
         values      : [],
     };
 
@@ -109,9 +111,10 @@ var dymo_papers = {
     function createPopup(element){
         element.popup = $('<div id="dymoEditorPopup">' +
                             "<input  id='popupInput'    type='text value='value' /> " +
-                            "<select id='popupSelect' >" + getAvailableValueOptions(element) +"</select> " +
-                            "<select id='popupFont' >"   + getAvailableFontOptions(element)  +"</select> " +
-                            "<select id='popupSize' >"   + getAvailableSizeOptions(element)  +"</select> " +
+                            "<select id='popupSelect' >"        + getAvailableValueOptions(element) +"</select> " +
+                            "<select id='popupFont' >"          + getAvailableFontOptions(element)  +"</select> " +
+                            "<select id='popupSize' >"          + getAvailableSizeOptions(element)  +"</select> " +
+                            "<select id='popupBarcodeSize' >"   + getAvailableBarcodeSizeOptions(element)  +"</select> " +
                             "<a      id='popupSave'         onClick='editor.updateObjectText()'>        <i class='fa fa-floppy-o'></i></a> " +
                             "<a      id='popupBold'         onClick='editor.toggleBold()'>              <i class='fa fa-bold'></i></a> " +
                             "<a      id='popupAlignLeft'    onClick='editor.setAlign(\"left\")'>        <i class='fa fa-align-left'></i></a> " +
@@ -122,9 +125,10 @@ var dymo_papers = {
                           '</div>');
         element.editor.parent().append(element.popup);
 
-        $( "#popupSelect" ) .change(function() {  updateObjectText(element);                 });
-        $( "#popupFont" )   .change(function() {  updateObjectFormat(element,'font');        });
-        $( "#popupSize" )   .change(function() {  updateObjectFormat(element,'size');        });
+        $( "#popupSelect" )         .change(function() {  updateObjectText(element);                 });
+        $( "#popupFont" )           .change(function() {  updateObjectFormat(element,'font');        });
+        $( "#popupSize" )           .change(function() {  updateObjectFormat(element,'size');        });
+        $( "#popupBarcodeSize" )    .change(function() {  updateObjectFormat(element,'barcodeSize');        });
     }
 
     function getAvailableValueOptions(element){
@@ -150,9 +154,18 @@ var dymo_papers = {
         });
         return options;
     }
-    //========================================================================
-    // FUNCTIONS
-    //========================================================================
+
+    function getAvailableBarcodeSizeOptions(element){
+        var options = "";
+        element.settings.barcodeSizes.forEach(function(entry) {
+            options = options + "<option value="+ entry +">"    + entry   +"</option>";
+        });
+        return options;
+    }
+
+    //--------------------------------------------------------------------------------------------
+    // PAPER
+    //--------------------------------------------------------------------------------------------
     function toggleOrientation(element){
         var oldHeight   = element.editor.css('height');
         var oldWidth    = element.editor.css('width');
@@ -176,6 +189,9 @@ var dymo_papers = {
 
     }
 
+    //--------------------------------------------------------------------------------------------
+    // PRINT
+    //--------------------------------------------------------------------------------------------
     function print(element,values){
         try{
             element.printValues = values;
@@ -212,6 +228,9 @@ var dymo_papers = {
         }
     }
 
+    //--------------------------------------------------------------------------------------------
+    // ADD
+    //--------------------------------------------------------------------------------------------
     function addObject(element, type){
         var object;
         if(type == 'text'){
@@ -228,7 +247,14 @@ var dymo_papers = {
             object = $('<div type="barcode" class="dymoEditorBarcodeObject"><div>|| | |||| ||| | |||| ||| | |||| ||| | |||| </div></div>');
             object.css('width' ,'300px');
             object.css('height','50px');
-            object.attr('text','barcode')
+            object.attr('text','barcode');
+            object.attr('barcodeSize','Medium');
+        }
+        else if(type == 'valueBarcode'){
+            object = $('<div type="valueBarcode" class="dymoEditorBarcodeObject"><div>|| | |||| ||| | |||| ||| | |||| ||| | |||| </div></div>');
+            object.css('width' ,'300px');
+            object.css('height','50px');
+            object.attr('barcodeSize','Medium');
         }
 
         element.editor.append(object);
@@ -242,6 +268,9 @@ var dymo_papers = {
         });
     }
 
+    //--------------------------------------------------------------------------------------------
+    // UPDATE
+    //--------------------------------------------------------------------------------------------
     function getObjectText(object){
         var type = object.attr('type');
         if(type == 'text') {
@@ -251,6 +280,10 @@ var dymo_papers = {
             return object.attr('text');
         }
         return "";
+    }
+
+    function getObjectValue(object){
+        return object.attr('value');
     }
 
     function updateObjectText(element){
@@ -266,6 +299,9 @@ var dymo_papers = {
         else if(objectType == 'barcode'){
             element.currentObject.attr('text',$('#popupInput').val());
         }
+        else if(objectType == 'valueBarcode'){
+            element.currentObject.attr('value',$('#popupSelect').val());
+        }
     }
 
     function updateObjectFormat(element, format){
@@ -274,6 +310,14 @@ var dymo_papers = {
         }
         else if(format == 'size'){
             element.currentObject.css('font-size',$('#popupSize').val());
+        }
+        else if(format == 'barcodeSize'){
+            var size = $('#popupBarcodeSize').val();
+            element.currentObject.attr('barcodeSize',$('#popupBarcodeSize').val());
+
+            if      (size == 'Small')    element.currentObject.css('font-size','20px');
+            else if (size == 'Medium')   element.currentObject.css('font-size','24px');
+            else if (size == 'Large')    element.currentObject.css('font-size','35px');
         }
     }
 
@@ -295,6 +339,9 @@ var dymo_papers = {
         hidePopup(element);
     }
 
+    //--------------------------------------------------------------------------------------------
+    // SHOW POPUP
+    //--------------------------------------------------------------------------------------------
     function showPopup(element, object){
         element.currentObject = object;
         element.popup.css('display','block');
@@ -312,33 +359,39 @@ var dymo_papers = {
         var popupBold           = $('#popupBold')       .hide();
         var popupFont           = $('#popupFont')       .hide();
         var popupSize           = $('#popupSize')       .hide();
+        var popupBarcodeSize    = $('#popupBarcodeSize').hide();
 
         if(objectType == 'text') {
-            popupInput  .show();
-            popupInput  .val(getObjectText(object));
+            popupInput  .show();    popupInput  .val(getObjectText(object));
             popupSave   .show();
             popupAlignLeft.show();  popupAlignCenter.show();                     popupAlignRight.show();    popupBold.show();
             popupFont   .show();    popupFont.val(object.css('font-family'));    popupSize.show();          popupSize.val(object.css('font-size'));
         }
         else if(objectType == 'value') {
-            popupSelect .show();
+            popupSelect .show();    popupSelect .val(getObjectValue(object));
             popupSave   .show();
             popupAlignLeft.show();  popupAlignCenter.show();                     popupAlignRight.show();    popupBold.show();
             popupFont   .show();    popupFont.val(object.css('font-family'));    popupSize.show();          popupSize.val(object.css('font-size'));
         }
         else if(objectType == 'barcode'){
-            popupInput  .show();
-            popupInput.val(getObjectText(object));
-            popupSave   .show();
+            popupInput      .show();    popupInput.val(getObjectText(object));
+            popupBarcodeSize.show();    popupBarcodeSize.val(object.attr('barcodeSize'));
+            popupSave       .show();
+        }
+        else if(objectType == 'valueBarcode'){
+            popupSelect     .show();    popupSelect .val(getObjectValue(object));
+            popupBarcodeSize.show();    popupBarcodeSize.val(object.attr('barcodeSize'));
         }
     }
-
 
     function hidePopup(element){
         element.popup.css('display','none');
         element.currentObject = null;
     }
 
+    //--------------------------------------------------------------------------------------------
+    // EXPORT XML
+    //--------------------------------------------------------------------------------------------
     function exportXML(element){
         var xml = '<?xml version="1.0" encoding="utf-8"?>' +
                   '<DieCutLabel Version="8.0" Units="twips">';
@@ -376,6 +429,7 @@ var dymo_papers = {
         var fontSize    = parseInt(object.css('font-size')) * PIXEL_TO_INCH;
         var isBold      = (object.css('font-weight') == 'bold')?'True':'False';
         var textAlign   = object.css('text-align');
+        var barcodeSize = object.attr('barcodeSize');
 
         textAlign = textAlign.charAt(0).toUpperCase() + textAlign.slice(1); //Capitalize
         if(textAlign == 'Start') textAlign = 'Left';
@@ -415,6 +469,8 @@ var dymo_papers = {
                 </ObjectInfo>';
         }
         else if(type == 'barcode'){
+            fontSize = fontSize/2;
+
             return '<ObjectInfo>\
                     <BarcodeObject>\
                         <Name>Barcode</Name>\
@@ -426,7 +482,7 @@ var dymo_papers = {
                         <IsVariable>True</IsVariable>\
                         <Text>' + text + '</Text>\
                         <Type>Code128Auto</Type>\
-                        <Size>Medium</Size>\
+                        <Size>' + barcodeSize + '</Size>\
                         <TextPosition>Bottom</TextPosition>\
                         <TextFont Family="' + fontFamily + '" Size="' + fontSize + '" Bold="False" Italic="False" Underline="False" Strikeout="False" />\
                         <CheckSumFont Family="' + fontFamily + '" Size="' + fontSize + '" Bold="False" Italic="False" Underline="False" Strikeout="False" />\
@@ -469,6 +525,90 @@ var dymo_papers = {
                     <Bounds X="' + x + '" Y="' + y + '" Width="' + width + '" Height="' + height + '" />\
                 </ObjectInfo>';
         }
+        else if(type == 'valueBarcode'){
+            fontSize = fontSize/2;
+            var valueId  = object.attr('value');
+            var theValue = element.printValues[valueId];
+
+            return '<ObjectInfo>\
+                    <BarcodeObject>\
+                        <Name>Barcode</Name>\
+                        <ForeColor Alpha="255" Red="0" Green="0" Blue="0" />\
+                        <BackColor Alpha="0" Red="255" Green="255" Blue="255" />\
+                        <LinkedObjectName>BarcodeText</LinkedObjectName>\
+                        <Rotation>Rotation0</Rotation>\
+                        <IsMirrored>False</IsMirrored>\
+                        <IsVariable>True</IsVariable>\
+                        <Text>' + theValue + '</Text>\
+                        <Type>Code128Auto</Type>\
+                        <Size>' + barcodeSize + '</Size>\
+                        <TextPosition>Bottom</TextPosition>\
+                        <TextFont Family="' + fontFamily + '" Size="' + fontSize + '" Bold="False" Italic="False" Underline="False" Strikeout="False" />\
+                        <CheckSumFont Family="' + fontFamily + '" Size="' + fontSize + '" Bold="False" Italic="False" Underline="False" Strikeout="False" />\
+                        <TextEmbedding>None</TextEmbedding>\
+                        <ECLevel>0</ECLevel>\
+                        <HorizontalAlignment>Center</HorizontalAlignment>\
+                        <QuietZonesPadding Left="0" Top="0" Right="0" Bottom="0" />\
+                    </BarcodeObject>\
+                    <Bounds X="' + x + '" Y="' + y + '" Width="' + width + '" Height="' + height + '" />\
+                </ObjectInfo>';
+        }
+    }
+
+
+    //--------------------------------------------------------------------------------------------
+    // EXPORT JSON
+    //--------------------------------------------------------------------------------------------
+    function exportJSON(element){
+
+        var exported = [];
+
+        element.editor.children().each(function(){
+            exported.push( exportObjectJSON(element,$(this)) );
+        });
+
+        console.log(JSON.stringify(exported));
+
+    }
+
+    function exportObjectJSON(element,object){
+        var exportedObject      = {};
+        var type                = object.attr('type');
+        exportedObject.type     = type;
+
+        exportPosition(exportedObject,object);
+
+        if(type == 'text'){
+            exportAttributes(exportedObject,object);
+        }
+        else if(type=='value'){
+            exportAttributes(exportedObject,object);
+            exportedObject.text         = getObjectText(object);
+            exportedObject.valueId      = getObjectValue(object);
+        }
+        else if(type=='barcode'){
+            exportedObject.text         = getObjectText(object);
+            exportedObject.barcodeSize  = object.attr('barcodeSize');
+        }
+        else if(type=='valueBarcode'){
+            exportedObject.valueId      = getObjectValue(object);
+            exportedObject.barcodeSize  = object.attr('barcodeSize');
+        }
+
+        return exportedObject;
+    }
+
+    function exportPosition(exportedObject, object){
+        exportedObject.x        = (object.position().left - object.parent().position().left);
+        exportedObject.y        = (object.position().top  - object.parent().position().top);
+        exportedObject.width    = object.width();
+        exportedObject.height   = object.height();
+    }
+
+    function exportAttributes(exportedObject, object){
+        exportedObject.bold         = object.css('font-weight') == 'bold';
+        exportedObject.fontSize     = object.css('font-size');
+        exportedObject.fontFamilty  = object.css('font-family');
     }
 
 })( jQuery );

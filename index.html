@@ -19,12 +19,14 @@
     <button onClick="editor.selectPaper(DYMO_PAPER_SHIPPING);">     Paper Shipping</button>
     <button onClick="editor.selectPaper(DYMO_PAPER_FILEFOLDER);">   Paper Filefolder</button>
 
-    <button onClick="editor.exportXML();">   Export XML</button>
+    <button onClick="editor.exportXML();">  Export XML</button>
+    <button onClick="editor.exportJSON();"> Export JSON</button>
 
     <br>
-    <button onClick="editor.addObject('text');">Text</button>
-    <button onClick="editor.addObject('value');">Value</button>
-    <button onClick="editor.addObject('barcode');">Barcode</button>
+    <button onClick="editor.addObject('text');">            Text</button>
+    <button onClick="editor.addObject('value');">           Value</button>
+    <button onClick="editor.addObject('barcode');">         Barcode</button>
+    <button onClick="editor.addObject('valueBarcode');">    Value Barcode</button>
 
     <br><br>
     <div id="dymoEditor"></div>
