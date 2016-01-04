@@ -13,20 +13,24 @@
 <h1>Dymo Label Editor</h1>
 <!-- http://developers.dymo.com/tag/xml/ -->
 
+    <b>Paper</b>
     <button onClick="editor.toggleOrientation();">              Toggle Orientation</button>
 
     <button onClick="editor.selectPaper(DYMO_PAPER_ADDRESS);">      Paper Address</button>
     <button onClick="editor.selectPaper(DYMO_PAPER_SHIPPING);">     Paper Shipping</button>
     <button onClick="editor.selectPaper(DYMO_PAPER_FILEFOLDER);">   Paper Filefolder</button>
 
+    <br>
+    <b>Export</b>
     <button onClick="editor.exportXML();">  Export XML</button>
     <button onClick="editor.exportJSON();"> Export JSON</button>
 
     <br>
-    <button onClick="editor.addObject('text');">            Text</button>
-    <button onClick="editor.addObject('value');">           Value</button>
-    <button onClick="editor.addObject('barcode');">         Barcode</button>
-    <button onClick="editor.addObject('valueBarcode');">    Value Barcode</button>
+    <b>Add</b>
+    <button onClick="editor.addObject('text');">            Text            </button>
+    <button onClick="editor.addObject('value');">           Value           </button>
+    <button onClick="editor.addObject('barcode');">         Barcode         </button>
+    <button onClick="editor.addObject('valueBarcode');">    Value Barcode   </button>
 
     <br><br>
     <div id="dymoEditor"></div>
@@ -34,7 +38,6 @@
     <br>
 
     <button onClick="editor.print({'Id':10,'Name':'SuperAwesome product','Price':'10.00 €','Barcode':10121536});">Print</button>
-
 
     <script src = "https://code.jquery.com/jquery-2.1.4.min.js"></script>
     <script src = "https://code.jquery.com/ui/1.11.3/jquery-ui.min.js"    type="text/javascript"></script>
@@ -48,7 +51,7 @@
             editor = $('dymoEditor').dymoEditor(
                     {'values'   :['Id','Name','Price','Barcode']} ,
 
-                    {"paper":"30252 Address","orientation":"Portrait","objects":[{"type":"text","x":10,"y":37.875,"width":180,"height":50,"bold":false,"fontSize":"14px","fontFamily":"Calibri","text":"another text"},{"type":"text","x":3,"y":5.875,"width":185,"height":30,"bold":false,"fontSize":"22px","fontFamily":"Calibri","text":"a text"},{"type":"valueBarcode","x":188,"y":3,"width":185,"height":35,"valueId":"Name","barcodeSize":"Small"}]}
+                    {"paper":"30252 Address","orientation":"Landscape","objects":[{"type":"text","x":10,"y":37.875,"width":180,"height":50,"bold":false,"fontSize":"14px","fontFamily":"Calibri","text":"another text"},{"type":"text","x":3,"y":5.875,"width":185,"height":30,"bold":false,"fontSize":"22px","fontFamily":"Calibri","text":"a text"},{"type":"valueBarcode","x":188,"y":3,"width":185,"height":35,"valueId":"Name","barcodeSize":"Small"}]}
 
                     );
         });

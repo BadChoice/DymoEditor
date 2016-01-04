@@ -11,7 +11,7 @@ var DYMO_ORIENTATION_LANDSCAPE  = 'Landscape';
 var DYMO_ORIENTATION_PORTRAIT   = 'Portrait';
 
 var DYMO_PAPER_ADDRESS          = "30252 Address";
-var DYMO_PAPER_FILEFOLDER       = "30327 File Folder – offset"; //Default
+var DYMO_PAPER_FILEFOLDER       = "30327 File Folder – offset";
 var DYMO_PAPER_SHIPPING         = "30256 Shipping";
 
 var DYMO_ANIMATION_TIME         = 400;
@@ -32,7 +32,7 @@ var dymo_papers = {
             'height'        : 100,
             'pixel_to_inch' : 12,
         }
-    }
+    };
 
 //-----------------------
 // TICKET EDITOR PLUGIN
@@ -57,7 +57,7 @@ var dymo_papers = {
         var popup;
         var currentObject;
 
-        var printValues         = {};
+        var printValues             = {};
 
         //-----------
         //Functions
@@ -90,7 +90,7 @@ var dymo_papers = {
     $.fn.dymoEditor.defaults = {
         paper       : DYMO_PAPER_ADDRESS,
         orientation : DYMO_ORIENTATION_LANDSCAPE,
-        fontFamilies: ['Times New Roman','Arial','Helvetica Neue','Calibri'],
+        fontFamilies: ['Arial','Times New Roman','Helvetica Neue','Calibri'],
         fontSizes   : ['12px','14px','16px','18px','20px','22px','24px','26px','28px','30px'],
         barcodeSizes: ['Small','Medium','Large'],
         values      : [],
@@ -261,24 +261,24 @@ var dymo_papers = {
         if(type == 'text'){
             object = $('<div type="text"><div>Click to edit</div></div>');
             object.css('width' ,'100px');
-            object.css('height','50px');
+            object.css('height','20px');
         }
         else if(type == 'value'){
             object = $('<div type="value"><div>--</div></div>');
             object.css('width' ,'100px');
-            object.css('height','50px');
+            object.css('height','20px');
         }
         else if(type == 'barcode'){
             object = $('<div type="barcode" class="dymoEditorBarcodeObject"><div>|| | |||| ||| | |||| ||| | |||| ||| | |||| </div></div>');
             object.css('width' ,'300px');
-            object.css('height','50px');
+            object.css('height','30px');
             object.attr('text','barcode');
             object.attr('barcodeSize','Medium');
         }
         else if(type == 'valueBarcode'){
             object = $('<div type="valueBarcode" class="dymoEditorBarcodeObject"><div>|| | |||| ||| | |||| ||| | |||| ||| | |||| </div></div>');
             object.css('width' ,'300px');
-            object.css('height','50px');
+            object.css('height','30px');
             object.attr('barcodeSize','Medium');
         }
 
@@ -442,30 +442,24 @@ var dymo_papers = {
 
     function exportObjectXml(element,object){
 
-        var type    = object.attr("type");
+        var type            = object.attr("type");
 
-        var PIXEL_TO_INCH = dymo_papers[element.selectedPaper].pixel_to_inch;
+        var PIXEL_TO_INCH   = dymo_papers[element.selectedPaper].pixel_to_inch;
 
-        var x       = (object.position().left - object.parent().position().left)* PIXEL_TO_INCH + 160;
-        var y       = (object.position().top  - object.parent().position().top) * PIXEL_TO_INCH + 100;
-        var width   = object.width()         * PIXEL_TO_INCH;
-        var height  = object.height()        * PIXEL_TO_INCH;
+        var x               = (object.position().left - object.parent().position().left)* PIXEL_TO_INCH + 160;
+        var y               = (object.position().top  - object.parent().position().top) * PIXEL_TO_INCH + 100;
+        var width           = object.width()         * PIXEL_TO_INCH;
+        var height          = object.height()        * PIXEL_TO_INCH;
 
-        var text        = getObjectText(object);
-        var fontFamily  = object.css('font-family');
-        var fontSize    = parseInt(object.css('font-size')) * PIXEL_TO_INCH;
-        var isBold      = (object.css('font-weight') == 'bold')?'True':'False';
-        var textAlign   = object.css('text-align');
-        var barcodeSize = object.attr('barcodeSize');
+        var text            = getObjectText(object);
+        var fontFamily      = object.css('font-family');
+        var fontSize        = parseInt(object.css('font-size')) * PIXEL_TO_INCH;
+        var isBold          = (object.css('font-weight') == 'bold')?'True':'False';
+        var textAlign       = object.css('text-align');
+        var barcodeSize     = object.attr('barcodeSize');
 
         textAlign = textAlign.charAt(0).toUpperCase() + textAlign.slice(1); //Capitalize
         if(textAlign == 'Start') textAlign = 'Left';
-
-        /*console.log("Object position:" + object.position().left + " - " + object.position().top + "-" + width + "-" + height);
-        console.log("Parent position:" + object.parent().position().left + " - " + object.parent().position().top );
-        console.log("Final  position:" + (object.position().left - object.parent().position().left) + " - " + (object.position().top - object.parent().position().top) + "-" + width + "-" + height);
-        console.log("Final. position:" + x + " - " + y + "-" + width + "-" + height);
-        console.log("---");*/
 
         if(type == 'text') {
             return '<ObjectInfo>\
@@ -638,10 +632,10 @@ var dymo_papers = {
     }
 
     function exportPosition(exportedObject, object){
-        exportedObject.x        = object.position().left - object.parent().position().left ;
-        exportedObject.y        = object.position().top  - object.parent().position().top ;
-        exportedObject.width    = object.width();
-        exportedObject.height   = object.height();
+        exportedObject.x            = object.position().left - object.parent().position().left ;
+        exportedObject.y            = object.position().top  - object.parent().position().top ;
+        exportedObject.width        = object.width();
+        exportedObject.height       = object.height();
     }
 
     function exportAttributes(exportedObject, object){
