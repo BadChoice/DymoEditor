@@ -70,6 +70,8 @@ var DYMO_PIXEL_TO_INCH          = 12;
     $.fn.dymoEditor.defaults = {
         width:  "250px",
         height: "100px",
+        fontFamilies:['Arial','Helvetica Neue','Times New Roman'],
+        fontSizes   :['12px','14px','16px','18px','20px','22px','24px','26px','28px','30px'],
         values: [],
     };
 
@@ -88,6 +90,8 @@ var DYMO_PIXEL_TO_INCH          = 12;
         element.popup = $('<div id="dymoEditorPopup">' +
                             "<input  id='popupInput'    type='text value='value' /> " +
                             "<select id='popupSelect' >" + getAvailableValueOptions(element) +"</select> " +
+                            "<select id='popupFont' >"   + getAvailableFontOptions(element)  +"</select> " +
+                            "<select id='popupSize' >"   + getAvailableSizeOptions(element)  +"</select> " +
                             "<a      id='popupSave'         onClick='editor.updateObjectText()'>        <i class='fa fa-floppy-o'></i></a> " +
                             "<a      id='popupBold'         onClick='editor.toggleBold()'>              <i class='fa fa-bold'></i></a> " +
                             "<a      id='popupAlignLeft'    onClick='editor.setAlign(\"left\")'>        <i class='fa fa-align-left'></i></a> " +
@@ -97,11 +101,31 @@ var DYMO_PIXEL_TO_INCH          = 12;
                             "<a      id='popupClose'        onClick='editor.hidePopup()'>               <i class='fa fa-times-circle'></i></a> " +
                           '</div>');
         element.editor.parent().append(element.popup);
+
+        $( "#popupSelect" ) .change(function() {  updateObjectText(element);                 });
+        $( "#popupFont" )   .change(function() {  updateObjectFormat(element,'font');        });
+        $( "#popupSize" )   .change(function() {  updateObjectFormat(element,'size');        });
     }
 
     function getAvailableValueOptions(element){
         var options = "";
         element.settings.values.forEach(function(entry) {
+            options = options + "<option value="+ entry +">"    + entry   +"</option>";
+        });
+        return options;
+    }
+
+    function getAvailableFontOptions(element){
+        var options = "";
+        element.settings.fontFamilies.forEach(function(entry) {
+            options = options + "<option value="+ entry +">"    + entry   +"</option>";
+        });
+        return options;
+    }
+
+    function getAvailableSizeOptions(element){
+        var options = "";
+        element.settings.fontSizes.forEach(function(entry) {
             options = options + "<option value="+ entry +">"    + entry   +"</option>";
         });
         return options;
@@ -225,6 +249,15 @@ var DYMO_PIXEL_TO_INCH          = 12;
         }
     }
 
+    function updateObjectFormat(element, format){
+        if(format == 'font'){
+            element.currentObject.css('font-family',$('#popupFont').val());
+        }
+        else if(format == 'size'){
+            element.currentObject.css('font-size',$('#popupSize').val());
+        }
+    }
+
     function setAlign(element,align){
         element.currentObject.css('text-align',align);
     }
@@ -258,22 +291,26 @@ var DYMO_PIXEL_TO_INCH          = 12;
         var popupAlignCenter    = $('#popupAlignCenter').hide();
         var popupAlignRight     = $('#popupAlignRight') .hide();
         var popupBold           = $('#popupBold')       .hide();
+        var popupFont           = $('#popupFont')       .hide();
+        var popupSize           = $('#popupSize')       .hide();
 
         if(objectType == 'text') {
-            popupInput.show();
-            popupInput.val(getObjectText(object));
-            popupSave.show();
-            popupAlignLeft.show(); popupAlignCenter.show(); popupAlignRight.show(); popupBold.show();
+            popupInput  .show();
+            popupInput  .val(getObjectText(object));
+            popupSave   .show();
+            popupAlignLeft.show();  popupAlignCenter.show();                     popupAlignRight.show();    popupBold.show();
+            popupFont   .show();    popupFont.val(object.css('font-family'));    popupSize.show();          popupSize.val(object.css('font-size'));
         }
         else if(objectType == 'value') {
-            popupSelect.show();
-            popupSave.show();
-            popupAlignLeft.show(); popupAlignCenter.show(); popupAlignRight.show(); popupBold.show();
+            popupSelect .show();
+            popupSave   .show();
+            popupAlignLeft.show();  popupAlignCenter.show();                     popupAlignRight.show();    popupBold.show();
+            popupFont   .show();    popupFont.val(object.css('font-family'));    popupSize.show();          popupSize.val(object.css('font-size'));
         }
         else if(objectType == 'barcode'){
-            popupInput.show();
+            popupInput  .show();
             popupInput.val(getObjectText(object));
-            popupSave.show();
+            popupSave   .show();
         }
     }
 
@@ -312,7 +349,11 @@ var DYMO_PIXEL_TO_INCH          = 12;
         var y       = (object.position().top  - object.parent().position().top) * DYMO_PIXEL_TO_INCH + 100;
         var width   = object.width()         * DYMO_PIXEL_TO_INCH;
         var height  = object.height()        * DYMO_PIXEL_TO_INCH;
-        var text    = getObjectText(object);
+
+        var text        = getObjectText(object);
+        var fontFamily  = object.css('font-family');
+        var fontSize    = parseInt(object.css('font-size'));
+        var isBold      = (object.css('font-weight') == 'bold')?'True':'False';
 
         /*console.log("Object position:" + object.position().left + " - " + object.position().top + "-" + width + "-" + height);
         console.log("Parent position:" + object.parent().position().left + " - " + object.parent().position().top );
@@ -339,7 +380,7 @@ var DYMO_PIXEL_TO_INCH          = 12;
                             <Element>\
                                 <String>' + text + '</String>\
                                     <Attributes>\
-                                        <Font Family="Arial" Size="12" Bold="False" Italic="False" Underline="False" Strikeout="False" />\
+                                        <Font Family="' + fontFamily + '" Size="' + fontSize + '" Bold="'+isBold+'" Italic="False" Underline="False" Strikeout="False" />\
                                         <ForeColor Alpha="255" Red="0" Green="0" Blue="0" />\
                                     </Attributes>\
                             </Element>\
@@ -362,8 +403,8 @@ var DYMO_PIXEL_TO_INCH          = 12;
                         <Type>Code128Auto</Type>\
                         <Size>Medium</Size>\
                         <TextPosition>Bottom</TextPosition>\
-                        <TextFont Family="Arial" Size="8" Bold="False" Italic="False" Underline="False" Strikeout="False" />\
-                        <CheckSumFont Family="Arial" Size="8" Bold="False" Italic="False" Underline="False" Strikeout="False" />\
+                        <TextFont Family="' + fontFamily + '" Size="' + fontSize + '" Bold="False" Italic="False" Underline="False" Strikeout="False" />\
+                        <CheckSumFont Family="' + fontFamily + '" Size="' + fontSize + '" Bold="False" Italic="False" Underline="False" Strikeout="False" />\
                         <TextEmbedding>None</TextEmbedding>\
                         <ECLevel>0</ECLevel>\
                         <HorizontalAlignment>Center</HorizontalAlignment>\
@@ -394,7 +435,7 @@ var DYMO_PIXEL_TO_INCH          = 12;
                             <Element>\
                                 <String>' + theValue + '</String>\
                                     <Attributes>\
-                                        <Font Family="Arial" Size="12" Bold="False" Italic="False" Underline="False" Strikeout="False" />\
+                                        <Font Family="' + fontFamily + '" Size="' + fontSize + '" Bold="' + isBold + '" Italic="False" Underline="False" Strikeout="False" />\
                                         <ForeColor Alpha="255" Red="0" Green="0" Blue="0" />\
                                     </Attributes>\
                             </Element>\
