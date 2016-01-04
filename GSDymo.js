@@ -590,6 +590,7 @@ var dymo_papers = {
 
         if(type == 'text'){
             exportAttributes(exportedObject,object);
+            exportedObject.text         = getObjectText(object);
         }
         else if(type=='value'){
             exportAttributes(exportedObject,object);
@@ -616,9 +617,10 @@ var dymo_papers = {
     }
 
     function exportAttributes(exportedObject, object){
+        exportedObject.align        = object.css('text-align');
         exportedObject.bold         = object.css('font-weight') == 'bold';
         exportedObject.fontSize     = object.css('font-size');
-        exportedObject.fontFamilty  = object.css('font-family');
+        exportedObject.fontFamily   = object.css('font-family');
     }
 
     //--------------------------------------------------------------------------------------------
@@ -631,12 +633,42 @@ var dymo_papers = {
             var jobject = json.objects[i];
             var object  = addObject(element, jobject .type);
 
-
             object.css('left',  object.parent().position().left + jobject.x);
             object.css('top',   object.parent().position().top + jobject.y);
             object.css('width', jobject.width);
             object.css('height',jobject.height);
+
+            if(jobject.type == 'text'){
+                object.children().first().text(jobject.text);
+                loadJSONAttributes(object,jobject);
+            }
+            else if(jobject.type == 'value'){
+                object.attr('value',jobject.valueId);
+                object.children().first().text("{" + jobject.valueId + "}");
+                loadJSONAttributes(object,jobject);
+            }
+            else if(jobject.type == 'barcode'){
+                loadJSONBarcodeSize(object,jobject);
+            }
+            else if(jobject.type == 'valueBarcode'){
+                loadJSONBarcodeSize(object,jobject);
+                object.attr('value',jobject.valueId);
+            }
         }
+    }
+
+    function loadJSONAttributes(object,jobject){
+        object.css('text-align',    jobject.align);
+        object.css('font-family',   jobject.fontFamily);
+        object.css('font-size',     jobject.fontSize);
+        if(jobject.bold) object.css('font-weight','bold');
+    }
+
+    function loadJSONBarcodeSize(object,jobject){
+        object.attr('barcodeSize',jobject.barcodeSize);
+        if      (jobject.barcodeSize== 'Small')    object.css('font-size','20px');
+        else if (jobject.barcodeSize== 'Medium')   object.currentObject.css('font-size','24px');
+        else if (jobject.barcodeSize == 'Large')   object.currentObject.css('font-size','35px');
     }
 
 })( jQuery );
