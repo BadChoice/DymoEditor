@@ -45,7 +45,12 @@
     <script>
         var editor;
         $(document).ready(function() {
-            editor = $('dymoEditor').dymoEditor({'values':['Id','Name','Price','Barcode']});
+            editor = $('dymoEditor').dymoEditor(
+                    {'values'   :['Id','Name','Price','Barcode']} ,
+
+                    {"paper":"30252 Address","orientation":"Landscape","objects":[{"type":"text","x":5,"y":7.875,"width":175,"height":35,"bold":false,"fontSize":"16px","fontFamilty":"Times"},{"type":"text","x":48,"y":25.875,"width":165,"height":35,"bold":false,"fontSize":"16px","fontFamilty":"Times"}]}
+
+                    );
         });
     </script>
 

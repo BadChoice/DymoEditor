@@ -42,7 +42,7 @@ var dymo_papers = {
     //========================================================================
     // INIT
     //========================================================================
-    $.fn.dymoEditor = function(options) {
+    $.fn.dymoEditor = function(options, json) {
 
         //-----------
         // Default options
@@ -57,7 +57,6 @@ var dymo_papers = {
         var popup;
         var currentObject;
 
-        var selectedOrientation = DYMO_ORIENTATION_LANDSCAPE;
         var printValues         = {};
 
         //-----------
@@ -67,6 +66,7 @@ var dymo_papers = {
         this.selectPaper            = function (paper)  { selectPaper(this,paper);         return this; }
         this.exportXML              = function ()       { return exportXML(this);                       }
         this.exportJSON             = function ()       { return exportJSON(this);                      }
+        this.loadJSON               = function (json)   { return loadJSON(this,json);      return this; }
         this.addObject              = function (type)   { addObject(this,type);            return this; }
         this.hidePopup              = function ()       { hidePopup(this);                 return this; }
         this.removeSelectedObject   = function ()       { removeSelectedObject(this);      return this; }
@@ -79,6 +79,7 @@ var dymo_papers = {
         // Init
         //-----------
         init(this);
+        loadJSON(this,json);
         return this;
     }
 
@@ -88,6 +89,7 @@ var dymo_papers = {
     //========================================================================
     $.fn.dymoEditor.defaults = {
         paper       : DYMO_PAPER_ADDRESS,
+        orientation : DYMO_ORIENTATION_LANDSCAPE,
         fontFamilies: ['Times New Roman','Arial','Helvetica Neue','Calibri'],
         fontSizes   : ['12px','14px','16px','18px','20px','22px','24px','26px','28px','30px'],
         barcodeSizes: ['Small','Medium','Large'],
@@ -103,7 +105,8 @@ var dymo_papers = {
         element.editor.css('width', dymo_papers[element.settings.paper].width);
         element.editor.css('height',dymo_papers[element.settings.paper].height);
 
-        element.selectedPaper = element.settings.paper;
+        element.selectedPaper       = element.settings.paper;
+        element.selectedOrientation = element.settings.orientation;
 
         createPopup(element);
     }
@@ -266,6 +269,8 @@ var dymo_papers = {
         object.click(function(){
             showPopup(element, object);
         });
+
+        return object;
     }
 
     //--------------------------------------------------------------------------------------------
@@ -561,10 +566,15 @@ var dymo_papers = {
     //--------------------------------------------------------------------------------------------
     function exportJSON(element){
 
-        var exported = [];
+        var exported = {
+            paper       : element.selectedPaper,
+            orientation : element.selectedOrientation,
+            objects     : []
+        };
+
 
         element.editor.children().each(function(){
-            exported.push( exportObjectJSON(element,$(this)) );
+            exported.objects.push( exportObjectJSON(element,$(this)) );
         });
 
         console.log(JSON.stringify(exported));
@@ -599,8 +609,8 @@ var dymo_papers = {
     }
 
     function exportPosition(exportedObject, object){
-        exportedObject.x        = (object.position().left - object.parent().position().left);
-        exportedObject.y        = (object.position().top  - object.parent().position().top);
+        exportedObject.x        = object.position().left - object.parent().position().left ;
+        exportedObject.y        = object.position().top  - object.parent().position().top ;
         exportedObject.width    = object.width();
         exportedObject.height   = object.height();
     }
@@ -609,6 +619,24 @@ var dymo_papers = {
         exportedObject.bold         = object.css('font-weight') == 'bold';
         exportedObject.fontSize     = object.css('font-size');
         exportedObject.fontFamilty  = object.css('font-family');
+    }
+
+    //--------------------------------------------------------------------------------------------
+    // LOAD JSON
+    //--------------------------------------------------------------------------------------------
+    function loadJSON(element,json){
+
+        for(i = 0; i< json.objects.length; i++){
+
+            var jobject = json.objects[i];
+            var object  = addObject(element, jobject .type);
+
+
+            object.css('left',  object.parent().position().left + jobject.x);
+            object.css('top',   object.parent().position().top + jobject.y);
+            object.css('width', jobject.width);
+            object.css('height',jobject.height);
+        }
     }
 
 })( jQuery );

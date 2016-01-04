@@ -20,6 +20,7 @@
     border:1px dashed #ddd;
     position:absolute;
     display:inline-block;
+    position:absolute !important;
 }
 
 .dymoEditorBarcodeObject{
