@@ -63,7 +63,7 @@ var dymo_papers = {
         //Functions
         //-----------
         this.toggleOrientation      = function ()       { toggleOrientation(this);         return this; }
-        this.selectPaper            = function (paper)  { selectPaper(this,paper);         return this; }
+        this.selectPaper            = function (paper)  { selectPaper(this,paper,true);    return this; }
         this.exportXML              = function ()       { return exportXML(this);                       }
         this.exportJSON             = function ()       { return exportJSON(this);                      }
         this.loadJSON               = function (json)   { return loadJSON(this,json);      return this; }
@@ -179,17 +179,39 @@ var dymo_papers = {
         }, DYMO_ANIMATION_TIME, function() {
             // Animation complete.
         });
+
+        if(element.selectedOrientation == DYMO_ORIENTATION_LANDSCAPE)   element.selectedOrientation = DYMO_ORIENTATION_PORTRAIT;
+        else                                                            element.selectedOrientation = DYMO_ORIENTATION_LANDSCAPE;
     }
 
-    function selectPaper(element, paper){
+    function selectPaper(element, paper, animated){
 
-        element.selectedPaper = paper;
+        element.selectedOrientation = DYMO_ORIENTATION_LANDSCAPE;
+        element.selectedPaper       = paper;
 
         var w = dymo_papers[paper].width;
         var h = dymo_papers[paper].height;
 
-        element.editor.animate({ width   : w, height  : h }, DYMO_ANIMATION_TIME );
+        if(animated) {
+            element.editor.animate({width: w, height: h}, DYMO_ANIMATION_TIME);
+        }
+        else{
+            element.editor.width    (w);
+            element.editor.height   (h);
+        }
 
+    }
+
+    function setOrientation(element,orientation){
+        if(orientation == DYMO_ORIENTATION_PORTRAIT){
+            element.editor.width    (dymo_papers[element.selectedPaper].height);
+            element.editor.height   (dymo_papers[element.selectedPaper].width);
+        }
+        else{
+            element.editor.width    (dymo_papers[element.selectedPaper].width);
+            element.editor.height   (dymo_papers[element.selectedPaper].height);
+        }
+        element.selectedOrientation = orientation;
     }
 
     //--------------------------------------------------------------------------------------------
@@ -401,7 +423,7 @@ var dymo_papers = {
         var xml = '<?xml version="1.0" encoding="utf-8"?>' +
                   '<DieCutLabel Version="8.0" Units="twips">';
 
-        xml = xml + '<PaperOrientation>Landscape</PaperOrientation>'+
+        xml = xml + '<PaperOrientation>' + element.selectedOrientation +'</PaperOrientation>'+
                     '<Id>Address</Id>' +
                     '<PaperName>' + element.selectedPaper + '</PaperName>' +
                     '<DrawCommands/>';
@@ -501,7 +523,10 @@ var dymo_papers = {
         }
         else if(type == 'value'){
             var valueId  = object.attr('value');
-            var theValue = element.printValues[valueId];
+            var theValue = '--';
+            try {
+                theValue = element.printValues[valueId];
+            }catch(e){}
 
             return '<ObjectInfo>\
                     <TextObject>\
@@ -533,7 +558,10 @@ var dymo_papers = {
         else if(type == 'valueBarcode'){
             fontSize = fontSize/2;
             var valueId  = object.attr('value');
-            var theValue = element.printValues[valueId];
+            var theValue = "--";
+            try {
+                theValue = element.printValues[valueId];
+            }catch(e){}
 
             return '<ObjectInfo>\
                     <BarcodeObject>\
@@ -655,6 +683,9 @@ var dymo_papers = {
                 object.attr('value',jobject.valueId);
             }
         }
+
+        selectPaper     (element, json.paper, false);
+        setOrientation  (element, json.orientation);
     }
 
     function loadJSONAttributes(object,jobject){
