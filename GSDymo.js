@@ -11,10 +11,28 @@ var DYMO_ORIENTATION_LANDSCAPE  = 'Landscape';
 var DYMO_ORIENTATION_PORTRAIT   = 'Portrait';
 
 var DYMO_PAPER_ADDRESS          = "30252 Address";
-var DYMO_PAPER_FILEFOLDER       = "30327 File Folder – offset";
-var DYMO_PAPER_SHIPPING         = "30256 Shipping"; //Default
+var DYMO_PAPER_FILEFOLDER       = "30327 File Folder – offset"; //Default
+var DYMO_PAPER_SHIPPING         = "30256 Shipping";
 
-var DYMO_PIXEL_TO_INCH          = 12;
+var DYMO_ANIMATION_TIME         = 400;
+
+var dymo_papers = {
+        '30252 Address' : {
+            'width'         : 375,
+            'height'        : 95,
+            'pixel_to_inch' : 13,
+        },
+        '30327 File Folder – offset' :{
+            'width'         : 450,
+            'height'        : 235,
+            'pixel_to_inch' : 12,
+        },
+        '30256 Shipping' : {
+            'width'         : 250,
+            'height'        : 100,
+            'pixel_to_inch' : 12,
+        }
+    }
 
 //-----------------------
 // TICKET EDITOR PLUGIN
@@ -38,7 +56,7 @@ var DYMO_PIXEL_TO_INCH          = 12;
         var editor;
         var popup;
         var currentObject;
-        var selectedPaper       = DYMO_PAPER_SHIPPING;
+
         var selectedOrientation = DYMO_ORIENTATION_LANDSCAPE;
         var printValues         = {};
 
@@ -68,20 +86,22 @@ var DYMO_PIXEL_TO_INCH          = 12;
     // Plugin defaults – added as a property on our plugin function.
     //========================================================================
     $.fn.dymoEditor.defaults = {
-        width:  "250px",
-        height: "100px",
-        fontFamilies:['Arial','Helvetica Neue','Times New Roman'],
-        fontSizes   :['12px','14px','16px','18px','20px','22px','24px','26px','28px','30px'],
-        values: [],
+        paper       : DYMO_PAPER_ADDRESS,
+        fontFamilies: ['Times New Roman','Arial','Helvetica Neue','Calibri'],
+        fontSizes   : ['12px','14px','16px','18px','20px','22px','24px','26px','28px','30px'],
+        values      : [],
     };
 
     //========================================================================
     // INTI
     //========================================================================
     function init(element){
+
         element.editor = $('#dymoEditor');
-        element.editor.css('width','450px');
-        element.editor.css('height','235px');
+        element.editor.css('width', dymo_papers[element.settings.paper].width);
+        element.editor.css('height',dymo_papers[element.settings.paper].height);
+
+        element.selectedPaper = element.settings.paper;
 
         createPopup(element);
     }
@@ -134,27 +154,26 @@ var DYMO_PIXEL_TO_INCH          = 12;
     // FUNCTIONS
     //========================================================================
     function toggleOrientation(element){
-        console.log("Toggle Orientation");
         var oldHeight   = element.editor.css('height');
         var oldWidth    = element.editor.css('width');
 
         element.editor.animate({
             height  : oldWidth,
             width   : oldHeight
-        }, 1000, function() {
+        }, DYMO_ANIMATION_TIME, function() {
             // Animation complete.
         });
     }
 
     function selectPaper(element, paper){
-        if(paper == DYMO_PAPER_ADDRESS){
-            element.editor.animate({
-                height  : 100,
-                width   : 250
-            });
-        }
 
         element.selectedPaper = paper;
+
+        var w = dymo_papers[paper].width;
+        var h = dymo_papers[paper].height;
+
+        element.editor.animate({ width   : w, height  : h }, DYMO_ANIMATION_TIME );
+
     }
 
     function print(element,values){
@@ -326,7 +345,7 @@ var DYMO_PIXEL_TO_INCH          = 12;
 
         xml = xml + '<PaperOrientation>Landscape</PaperOrientation>'+
                     '<Id>Address</Id>' +
-                    '<PaperName>30256 Shipping</PaperName>' +
+                    '<PaperName>' + element.selectedPaper + '</PaperName>' +
                     '<DrawCommands/>';
 
         element.editor.children().each(function(){
@@ -345,15 +364,21 @@ var DYMO_PIXEL_TO_INCH          = 12;
 
         var type    = object.attr("type");
 
-        var x       = (object.position().left - object.parent().position().left)* DYMO_PIXEL_TO_INCH + 160;
-        var y       = (object.position().top  - object.parent().position().top) * DYMO_PIXEL_TO_INCH + 100;
-        var width   = object.width()         * DYMO_PIXEL_TO_INCH;
-        var height  = object.height()        * DYMO_PIXEL_TO_INCH;
+        var PIXEL_TO_INCH = dymo_papers[element.selectedPaper].pixel_to_inch;
+
+        var x       = (object.position().left - object.parent().position().left)* PIXEL_TO_INCH + 160;
+        var y       = (object.position().top  - object.parent().position().top) * PIXEL_TO_INCH + 100;
+        var width   = object.width()         * PIXEL_TO_INCH;
+        var height  = object.height()        * PIXEL_TO_INCH;
 
         var text        = getObjectText(object);
         var fontFamily  = object.css('font-family');
-        var fontSize    = parseInt(object.css('font-size'));
+        var fontSize    = parseInt(object.css('font-size')) * PIXEL_TO_INCH;
         var isBold      = (object.css('font-weight') == 'bold')?'True':'False';
+        var textAlign   = object.css('text-align');
+
+        textAlign = textAlign.charAt(0).toUpperCase() + textAlign.slice(1); //Capitalize
+        if(textAlign == 'Start') textAlign = 'Left';
 
         /*console.log("Object position:" + object.position().left + " - " + object.position().top + "-" + width + "-" + height);
         console.log("Parent position:" + object.parent().position().left + " - " + object.parent().position().top );
@@ -371,7 +396,7 @@ var DYMO_PIXEL_TO_INCH          = 12;
                         <Rotation>Rotation0</Rotation>\
                         <IsMirrored>False</IsMirrored>\
                         <IsVariable>True</IsVariable>\
-                        <HorizontalAlignment>Left</HorizontalAlignment>\
+                        <HorizontalAlignment>' + textAlign + '</HorizontalAlignment>\
                         <VerticalAlignment>Top</VerticalAlignment>\
                         <TextFitMode>ShrinkToFit</TextFitMode>\
                         <UseFullFontHeight>False</UseFullFontHeight>\
@@ -426,7 +451,7 @@ var DYMO_PIXEL_TO_INCH          = 12;
                         <Rotation>Rotation0</Rotation>\
                         <IsMirrored>False</IsMirrored>\
                         <IsVariable>True</IsVariable>\
-                        <HorizontalAlignment>Left</HorizontalAlignment>\
+                        <HorizontalAlignment>' + textAlign + '</HorizontalAlignment>\
                         <VerticalAlignment>Top</VerticalAlignment>\
                         <TextFitMode>ShrinkToFit</TextFitMode>\
                         <UseFullFontHeight>False</UseFullFontHeight>\
