@@ -1,6 +1,8 @@
 # Dymo Label Editor
 
-A JQuery Plugin to design and print Dymo labels developed initialy for [Revo](http://revo.works) web backend.
+A JQuery Plugin to design and print Dymo labels developed initialy for [Revo](http://revo.works) web backend.   
+Feel free to submit `pull requests` to improve it.
+
 
 Elements required:
 - JQuery  
