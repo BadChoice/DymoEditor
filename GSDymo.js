@@ -599,7 +599,9 @@ var dymo_papers = {
             exported.objects.push( exportObjectJSON(element,$(this)) );
         });
 
-        console.log(JSON.stringify(exported));
+        var jsonString = JSON.stringify(exported);
+        console.log(jsonString);
+        return jsonString;
 
     }
 
