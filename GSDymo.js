@@ -13,26 +13,42 @@ var DYMO_ORIENTATION_PORTRAIT   = 'Portrait';
 var DYMO_PAPER_ADDRESS          = "30252 Address";
 var DYMO_PAPER_FILEFOLDER       = "30327 File Folder – offset";
 var DYMO_PAPER_SHIPPING         = "30256 Shipping";
+var DYMO_PAPER_RETURN           = "11352 Return Address Int";
 
 var DYMO_ANIMATION_TIME         = 400;
 
 var dymo_papers = {
-        '30252 Address' : {
-            'width'         : 375,
-            'height'        : 95,
-            'pixel_to_inch' : 13,
-        },
-        '30327 File Folder – offset' :{
-            'width'         : 450,
-            'height'        : 235,
-            'pixel_to_inch' : 12,
-        },
-        '30256 Shipping' : {
-            'width'         : 250,
-            'height'        : 100,
-            'pixel_to_inch' : 12,
-        }
-    };
+    '30252 Address' : {
+        'width'         : 375,
+        'height'        : 95,
+        'pixel_to_inch' : 13,
+    },
+    '30327 File Folder – offset' :{
+        'width'         : 450,
+        'height'        : 235,
+        'pixel_to_inch' : 12,
+    },
+    '30256 Shipping' : {
+        'width'         : 250,
+        'height'        : 100,
+        'pixel_to_inch' : 12,
+    },
+    '11352 Return Address Int' : {
+        'width'         : 235,
+        'height'        : 105,
+        'pixel_to_inch' : 12,
+    }
+};
+
+
+function startupCode() {
+    console.log("Dymo connected");
+}
+
+function frameworkInitHelper() {
+    dymo.label.framework.init(startupCode);
+}
+window.onload = frameworkInitHelper;
 
 //-----------------------
 // TICKET EDITOR PLUGIN
@@ -113,19 +129,19 @@ var dymo_papers = {
 
     function createPopup(element){
         element.popup = $('<div id="dymoEditorPopup">' +
-                            "<input  id='popupInput'    type='text value='value' /> " +
-                            "<select id='popupSelect' >"        + getAvailableValueOptions(element) +"</select> " +
-                            "<select id='popupFont' >"          + getAvailableFontOptions(element)  +"</select> " +
-                            "<select id='popupSize' >"          + getAvailableSizeOptions(element)  +"</select> " +
-                            "<select id='popupBarcodeSize' >"   + getAvailableBarcodeSizeOptions(element)  +"</select> " +
-                            "<a      id='popupSave'         onClick='editor.updateObjectText()'>        <i class='fa fa-floppy-o'></i></a> " +
-                            "<a      id='popupBold'         onClick='editor.toggleBold()'>              <i class='fa fa-bold'></i></a> " +
-                            "<a      id='popupAlignLeft'    onClick='editor.setAlign(\"left\")'>        <i class='fa fa-align-left'></i></a> " +
-                            "<a      id='popupAlignCenter'  onClick='editor.setAlign(\"center\")'>      <i class='fa fa-align-center'></i></a> " +
-                            "<a      id='popupAlignRight'   onClick='editor.setAlign(\"right\")'>       <i class='fa fa-align-right'></i></a> " +
-                            "<a      id='popupRemove'       onClick='editor.removeSelectedObject()'>    <i class='fa fa-trash'></i></a> " +
-                            "<a      id='popupClose'        onClick='editor.hidePopup()'>               <i class='fa fa-times-circle'></i></a> " +
-                          '</div>');
+            "<input  id='popupInput'    type='text value='value' /> " +
+            "<select id='popupSelect' >"        + getAvailableValueOptions(element) +"</select> " +
+            "<select id='popupFont' >"          + getAvailableFontOptions(element)  +"</select> " +
+            "<select id='popupSize' >"          + getAvailableSizeOptions(element)  +"</select> " +
+            "<select id='popupBarcodeSize' >"   + getAvailableBarcodeSizeOptions(element)  +"</select> " +
+            "<a      id='popupSave'         onClick='editor.updateObjectText()'>        <i class='fa fa-floppy-o'></i></a> " +
+            "<a      id='popupBold'         onClick='editor.toggleBold()'>              <i class='fa fa-bold'></i></a> " +
+            "<a      id='popupAlignLeft'    onClick='editor.setAlign(\"left\")'>        <i class='fa fa-align-left'></i></a> " +
+            "<a      id='popupAlignCenter'  onClick='editor.setAlign(\"center\")'>      <i class='fa fa-align-center'></i></a> " +
+            "<a      id='popupAlignRight'   onClick='editor.setAlign(\"right\")'>       <i class='fa fa-align-right'></i></a> " +
+            "<a      id='popupRemove'       onClick='editor.removeSelectedObject()'>    <i class='fa fa-trash'></i></a> " +
+            "<a      id='popupClose'        onClick='editor.hidePopup()'>               <i class='fa fa-times-circle'></i></a> " +
+            '</div>');
         element.editor.parent().append(element.popup);
 
         $( "#popupSelect" )         .change(function() {  updateObjectText(element);                 });
@@ -225,7 +241,6 @@ var dymo_papers = {
 
             var label    = dymo.label.framework.openLabelXml(labelXml);
             var printers = dymo.label.framework.getPrinters();
-
             if (printers.length == 0)
                 throw "No DYMO printers are installed. Install DYMO printers.";
 
@@ -285,7 +300,7 @@ var dymo_papers = {
         element.editor.append(object);
         object.addClass ('dymoEditorObject');
         object.draggable({containment: "parent", grid: [ 5, 5 ]});
-        object.resizable({containment: "parent", grid: [ 5, 5 ], addClasses: false});
+        object.resizable({/*containment: "parent",*/ grid: [ 5, 5 ], addClasses: false});
 
 
         object.click(function(){
@@ -421,12 +436,12 @@ var dymo_papers = {
     //--------------------------------------------------------------------------------------------
     function exportXML(element){
         var xml = '<?xml version="1.0" encoding="utf-8"?>' +
-                  '<DieCutLabel Version="8.0" Units="twips">';
+            '<DieCutLabel Version="8.0" Units="twips">';
 
         xml = xml + '<PaperOrientation>' + element.selectedOrientation +'</PaperOrientation>'+
-                    '<Id>Address</Id>' +
-                    '<PaperName>' + element.selectedPaper + '</PaperName>' +
-                    '<DrawCommands/>';
+            '<Id>Address</Id>' +
+            '<PaperName>' + element.selectedPaper + '</PaperName>' +
+            '<DrawCommands/>';
 
         element.editor.children().each(function(){
             xml = xml + exportObjectXml(element,$(this));
@@ -602,7 +617,6 @@ var dymo_papers = {
         var jsonString = JSON.stringify(exported);
         console.log(jsonString);
         return jsonString;
-
     }
 
     function exportObjectJSON(element,object){
@@ -694,8 +708,8 @@ var dymo_papers = {
     function loadJSONBarcodeSize(object,jobject){
         object.attr('barcodeSize',jobject.barcodeSize);
         if      (jobject.barcodeSize== 'Small')    object.css('font-size','20px');
-        else if (jobject.barcodeSize== 'Medium')   object.currentObject.css('font-size','24px');
-        else if (jobject.barcodeSize == 'Large')   object.currentObject.css('font-size','35px');
+        else if (jobject.barcodeSize== 'Medium')   object.css('font-size','24px');
+        else if (jobject.barcodeSize == 'Large')   object.css('font-size','35px');
     }
 
 })( jQuery );
